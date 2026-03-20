@@ -11,6 +11,38 @@ client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 st.title("Mind Jungle 🌿")
 st.write("Welcome to your personal journal summarizer! This tool helps you reflect on your thoughts and feelings by summarizing the word jungles you create in your journal entries. Say whatever you want, I'll keep your secrets safe 😉")
 
+# prompt generator
+if "journal_prompt" not in st.session_state:
+    st.session_state.journal_prompt = None
+
+if st.button ("Give me a prompt plz."):
+    with st.spinner("Finding a prompt for you..."):
+        prompt_message = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            max_tokens=100,
+            messages=[
+                {
+                    "role":"system",
+                    "content": "Generate single, thoughtful journaling prompts. Return ONLY the prompt itself; no intro, no quotes, no extra text. It has to be introspective and warm, make the user really think about their day. Vary the topics: relationships, memories, emotions, dreams, gratitude, fears, growth, daily life."
+                },
+                {
+                    "role": "user",
+                    "content": "Give me a journaling prompt."
+                }
+            ]
+        )
+        st.session_state.journal_prompt = prompt_message.choices[0].message.content.strip()
+
+if st.session_state.journal_prompt:
+    st.markdown(
+        f"""
+        <div style="background-color: #f0f7f0; border-left: 4px solid #4CAF50; padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; color: #333;">
+            💭<em>{st.session_state.journal_prompt}</em>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
 entry = st.text_area("***What's on your mind?***", height=300, placeholder="Type something, anything...")
 
 if st.button("Analyze my thoughts"):
