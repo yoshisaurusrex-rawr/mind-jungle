@@ -46,4 +46,4 @@ streamlit run mind_jungle.py
 
 ## Author
 
-Built by [Yoshi](https://github.com/yoshisaurusrex-rawr) as a build/data analysis portfolio project.
+Built by [Yoshi](https://www.linkedin.com/in/yunshenli/) as a build/data analysis portfolio project.
