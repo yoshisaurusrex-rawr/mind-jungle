@@ -31,7 +31,7 @@ python3 -m venv venv
 source venv/bin/activate
 
 # Install dependencies
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 
 # Add your API key
 echo "GROQ_API_KEY=your_key_here" > .env
@@ -46,4 +46,4 @@ streamlit run mind_jungle.py
 
 ## Author
 
-Built by [Yoshi](https://github.com/yoshisaurusrex-rawr) as a data analysis portfolio project.
+Built by [Yoshi](https://github.com/yoshisaurusrex-rawr) as a build/data analysis portfolio project.
