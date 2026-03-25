@@ -466,7 +466,8 @@ def show_dashboard_page(user):
     import altair as alt
 
     df = pd.DataFrame(entries)
-    df["created_at"] = pd.to_datetime(df["created_at"]).dt.date
+    df["created_at"] = pd.to_datetime(df["created_at"]).dt.strftime("%Y-%m-%d")
+    df = df.groupby("created_at").agg({"score": "mean", "themes": "first"}).reset_index()
 
     # -- Fun stats --
     total = len(df)
@@ -526,7 +527,7 @@ def show_dashboard_page(user):
         color="#C4784A",
         point=alt.OverlayMarkDef(color="#C4784A", filled=True, size=80)
     ).encode(
-        x=alt.X("created_at:T", title="Date"),
+        x=alt.X("created_at:T", title="Date", axis=alt.Axis(format="%b %d", labelAngle=-45)),
         y=alt.Y("score:Q", scale=alt.Scale(domain=[1,10]), axis=alt.Axis(tickMinStep=1), title="Heaviness Score"),
         tooltip=["created_at:T", "score:Q", "themes:N"]
     ).properties(
