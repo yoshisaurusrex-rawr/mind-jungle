@@ -7,9 +7,211 @@ import re
 
 load_dotenv()
 
+def apply_theme():
+    st.markdown("""
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+
+        /* ── Base ── */
+        html, body, [data-testid="stAppViewContainer"] {
+            background-color: #F5F0E8;
+            color: #2C1810;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        [data-testid="stAppViewContainer"] > .main {
+            background-color: #F5F0E8;
+        }
+
+        /* ── Sidebar ── */
+        [data-testid="stSidebar"] {
+            background-color: #EDE5D8;
+            border-right: 1px solid #D4C4A8;
+        }
+
+        [data-testid="stSidebar"] * {
+            color: #2C1810 !important;
+        }
+
+        /* ── Title & Headers ── */
+        h1 {
+            font-family: 'Lora', serif !important;
+            color: #2C1810 !important;
+            font-weight: 600 !important;
+        }
+
+        h2, h3 {
+            font-family: 'Lora', serif !important;
+            color: #3D2314 !important;
+        }
+
+        /* ── Text area ── */
+        [data-testid="stTextArea"] textarea {
+            background-color: #FDF8F2 !important;
+            border: 1px solid #D4C4A8 !important;
+            border-radius: 8px !important;
+            color: #2C1810 !important;
+            font-family: 'DM Sans', sans-serif !important;
+        }
+
+        [data-testid="stTextArea"] textarea:focus {
+            border-color: #C4784A !important;
+            box-shadow: 0 0 0 2px #C4784A22 !important;
+        }
+
+        /* ── Buttons ── */
+        [data-testid="stButton"] button {
+            background-color: #C4784A !important;
+            color: #FDF8F2 !important;
+            border: none !important;
+            border-radius: 8px !important;
+            font-family: 'DM Sans', sans-serif !important;
+            font-weight: 500 !important;
+            padding: 0.5rem 1.5rem !important;
+            transition: background-color 0.2s ease !important;
+        }
+
+        [data-testid="stButton"] button:hover {
+            background-color: #A85E35 !important;
+        }
+
+        /* ── Metrics ── */
+        [data-testid="stMetric"] {
+            background-color: #EDE5D8 !important;
+            border-radius: 10px !important;
+            padding: 16px !important;
+            border: 1px solid #D4C4A8 !important;
+        }
+
+        [data-testid="stMetricLabel"] {
+            color: #7A5C4A !important;
+        }
+
+        [data-testid="stMetricValue"] {
+            color: #2C1810 !important;
+        }
+
+        /* ── Tabs ── */
+        [data-testid="stTabs"] [data-baseweb="tab"] {
+            font-family: 'DM Sans', sans-serif !important;
+            color: #7A5C4A !important;
+        }
+
+        [data-testid="stTabs"] [aria-selected="true"] {
+            color: #C4784A !important;
+            border-bottom-color: #C4784A !important;
+        }
+
+        /* ── Radio ── */
+        [data-testid="stRadio"] label {
+            color: #2C1810 !important;
+        }
+
+        /* ── Spinner ── */
+        [data-testid="stSpinner"] {
+            color: #C4784A !important;
+        }
+
+        /* ── Input fields ── */
+        [data-testid="stTextInput"] input {
+            background-color: #FDF8F2 !important;
+            border: 1px solid #D4C4A8 !important;
+            border-radius: 8px !important;
+            color: #2C1810 !important;
+        }
+
+        /* ── Divider ── */
+        hr {
+            border-color: #D4C4A8 !important;
+        }
+
+        /* ── Warning/Success/Info ── */
+        [data-testid="stAlert"] {
+            border-radius: 8px !important;
+        }
+
+        /* ── Dataframe ── */
+        [data-testid="stDataFrame"] {
+            border-radius: 8px !important;
+        }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #EDE5D8;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #C4784A;
+            border-radius: 3px;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
 # Initialize clients
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
+
+apply_theme()
+
+# loading screen
+def show_splash():
+    st.markdown("""
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+        
+        .splash-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 80vh;
+            font-family: 'Lora', serif;
+        }
+        
+        @keyframes jump {
+            from { transform: translateY(0px); }
+            to { transform: translateY(-30px); }
+        }
+        
+        @keyframes walk {
+            from { margin-left: -300px; opacity: 0; }
+            to { margin-left: 300px; opacity: 1; }
+        }
+
+        .splash-title {
+            font-size: 48px;
+            color: #2C1810;
+            margin-top: 24px;
+            animation: fadeIn 1s ease-in 0.5s forwards;
+            opacity: 0;
+        }
+
+        .splash-subtitle {
+            font-size: 18px;
+            color: #7A5C4A;
+            margin-top: 8px;
+            animation: fadeIn 1s ease-in 1s forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0px); }
+        }
+        </style>
+
+        <div class="splash-container">
+            <div class="splash-title">Mind Jungle 🌿</div>
+            <div class="splash-subtitle">loading your space to think...</div>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    import time
+    time.sleep(3)
+    st.session_state.splash_done = True
+    st.rerun()
 
 # ─────────────────────────────────────────
 # AUTH FUNCTIONS
@@ -136,7 +338,7 @@ def show_journal_page(user):
     if st.session_state.journal_prompt:
         st.markdown(
             f"""
-            <div style="background-color: #f0f7f0; border-left: 4px solid #4CAF50; padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; color: #333;">
+            <div style="background-color: #FDF3E7; border-left: 4px solid #C4784A; padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; color: #333;">
                 💭 <em>{st.session_state.journal_prompt}</em>
             </div>
             """,
@@ -244,7 +446,8 @@ SCORE: [a single number from 1 to 10 representing emotional heaviness, where 1 i
                 st.markdown("---")
 
                 analysis = re.sub(r"SCORE:\s*\d+\n?", "", response).strip()
-                st.markdown(analysis)
+                
+            st.markdown(analysis)
 
 # ─────────────────────────────────────────
 # DASHBOARD PAGE
@@ -309,7 +512,7 @@ def show_dashboard_page(user):
             )
             st.markdown(
                 f"""
-                <div style="background-color: #f0f7f0; border-left: 4px solid #4CAF50; padding: 16px; border-radius: 6px; color: #333;">
+                <div style="background-color: #FDF3E7; border-left: 4px solid #C4784A; padding: 16px; border-radius: 6px; color: #333;">
                     💭{narrative.choices[0].message.content.strip()}
                 </div>
                 """,
@@ -319,21 +522,23 @@ def show_dashboard_page(user):
 
     # -- Mood Chart --
     st.subheader("Mood Over Time")
-    chart = alt.Chart(df).mark_area(
-        line={"color": "#4CAF50"},
-        color=alt.Gradient(
-            gradient="linear",
-            stops=[
-                alt.GradientStop(color="#F4433622", offset=0),
-                alt.GradientStop(color="#4CAF5022", offset=1)
-            ],
-            x1=1, x2=1, y1=1, y2=0
-        )
+    chart = alt.Chart(df).mark_line(
+        color="#C4784A",
+        point=alt.OverlayMarkDef(color="#C4784A", filled=True, size=80)
     ).encode(
         x=alt.X("created_at:T", title="Date"),
         y=alt.Y("score:Q", scale=alt.Scale(domain=[1,10]), axis=alt.Axis(tickMinStep=1), title="Heaviness Score"),
         tooltip=["created_at:T", "score:Q", "themes:N"]
-    ).properties(height=500)
+    ).properties(
+        height=500,
+        background="#F5F0E8"
+    ).configure_axis(
+        gridColor="#D4C4A8",
+        labelColor="#7A5C4A",
+        titleColor="#7A5C4A"
+    ).configure_view(
+        stroke="#D4C4A8"
+    )
     st.altair_chart(chart, use_container_width=True)
 
     st.markdown("---")
@@ -349,10 +554,11 @@ def show_dashboard_page(user):
 # APP ENTRY POINT
 # ─────────────────────────────────────────
 
-if "user" not in st.session_state:
+if "splash_done" not in st.session_state:
+    show_splash()
+elif "user" not in st.session_state:
     show_auth_page()
-else:
-    # restore session on every rerun
-    session = st.session_state.session 
+else: 
+    session = st.session_state.session
     supabase.auth.set_session(session.access_token, session.refresh_token)
     show_main_app()
