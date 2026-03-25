@@ -217,9 +217,14 @@ def show_splash():
 # AUTH FUNCTIONS
 # ─────────────────────────────────────────
 
-def sign_up(email, password):
+def sign_up(email, password, username):
     try:
         res = supabase.auth.sign_up({"email": email, "password": password})
+        if res.user:
+            supabase.table("profiles").insert({
+                "id": res.user.id,
+                "username": username
+            }).execute()
         return res.user, None
     except Exception as e:
         return None, str(e)
@@ -229,13 +234,23 @@ def sign_in(email, password):
         res = supabase.auth.sign_in_with_password({"email": email, "password": password})
         # set session so the RLS works
         supabase.auth.set_session(res.session.access_token, res.session.refresh_token)
-        return res.user, res.session, None
+        username = get_username(res.user.id)
+        return res.user, res.session, username, None
     except Exception as e:
-        return None, None, str(e)
+        return None, None, None, str(e)
 
 def sign_out():
     supabase.auth.sign_out()
     st.session_state.clear()
+
+def get_username(user_id):
+    try:
+        res = supabase.table("profiles").select("username").eq("id", user_id).execute()
+        if res.data:
+            return res.data[0]["username"]
+    except:
+        pass
+    return "friend"
 
 # ─────────────────────────────────────────
 # DATABASE FUNCTIONS
@@ -266,18 +281,22 @@ def show_auth_page():
         email = st.text_input("Email", key="login_email")
         password = st.text_input("Password", type="password", key="login_password")
         if st.button("Log In"):
-            user, session, error = sign_in(email, password)
+            user, session, username, error = sign_in(email, password)
             if error:
                 st.error(f"Login failed: {error}")
             else:
                 st.session_state.user = user
                 st.session_state.session = session
+                st.session_state.username = username
                 st.rerun()
 
     with tab2:
+        username = st.text_input("What should I call you?", key="signup_username")
         email = st.text_input("Email", key="signup_email")
         password = st.text_input("Password", type="password", key="signup_password")
-        if st.button("Sign Up"):
+        if username.strip() == "":
+            st.warning("Please enter a name!")
+        else:
             user, error = sign_up(email, password)
             if error:
                 st.error(f"Sign up failed: {error}")
@@ -293,7 +312,8 @@ def show_main_app():
 
     # Sidebar
     with st.sidebar:
-        st.markdown(f"👋 **{user.email}**")
+        username = st.session_state.get("username", "friend")
+        st.markdown(f"<h3 style='color: #2C1810;'>What's up, <strong>{username}</strong> 👋</h3>", unsafe_allow_html=True)
         if st.button("Log Out"):
             sign_out()
             st.rerun()
