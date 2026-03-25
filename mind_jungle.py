@@ -297,7 +297,7 @@ def show_auth_page():
         if username.strip() == "":
             st.warning("Please enter a name!")
         else:
-            user, error = sign_up(email, password)
+            user, error = sign_up(email, password, username)
             if error:
                 st.error(f"Sign up failed: {error}")
             else:
