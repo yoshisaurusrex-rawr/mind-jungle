@@ -4,6 +4,7 @@ from supabase import create_client
 from dotenv import load_dotenv
 import os
 import re
+import random
 
 load_dotenv()
 
@@ -268,12 +269,42 @@ def get_mood_history(user_id):
     return res.data
 
 # ─────────────────────────────────────────
+# SONG RECOMMENDATION
+# ─────────────────────────────────────────
+def get_song_recommendation(analysis_text):
+    result = groq_client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        max_tokens = 100,
+        messages=[
+            {
+                "role": "system",
+                "content": "Recommend one song that matches the emotional tone of the journal entry analysis. Respond ONLY in this format: SONG [song title] | ARTIST: [artist name] | REASON: [one sentence explaining why this song fits, max 15 words]"
+            },
+            {
+                "role": "user",
+                "content": f"Based on this journal analysis, recommend one song:\n{analysis_text}"
+            }
+        ]
+    )
+    return result.choices[0].message.content.strip()
+
+# ─────────────────────────────────────────
 # LOGIN / SIGNUP PAGE
 # ─────────────────────────────────────────
 
 def show_auth_page():
     st.title("Mind Jungle 🌿")
     st.write("Hello there! Please log in or sign up to continue.")
+    st.markdown("""
+    <div style="background-color: #EDE5D8; border-radius: 12px; padding: 24px; margin: 16px 0;">
+        <h3 style="color: #2C1810; font-family: 'Lora', serif; margin-bottom: 12px;">What is Mind Jungle? 🌿</h3>
+        <p style="color: #7A5C4A; margin-bottom: 8px;">A private space to dump your thoughts and get something meaningful back.</p>
+        <p style="color: #7A5C4A; margin-bottom: 8px;">✍️ <strong>Write</strong> — type anything, unfiltered, your secrets are safe 😉</p>
+        <p style="color: #7A5C4A; margin-bottom: 8px;">🧠 <strong>Analyze</strong> — get themes, tone, a summary and a gentle reframe</p>
+        <p style="color: #7A5C4A; margin-bottom: 8px;">📊 <strong>Track</strong> — see how your mood shifts over time</p>
+        <p style="color: #7A5C4A; margin-top: 12px; font-size: 13px;">Your entries are never stored. Only your mood score is saved for tracking.</p>
+    </div>
+""", unsafe_allow_html=True)
 
     tab1, tab2 = st.tabs(["Log In", "Sign Up"])
 
@@ -338,6 +369,7 @@ def show_journal_page(user):
         st.session_state.journal_prompt = None
 
     if st.button("✨ Give me a prompt"):
+        st.session_state.journal_prompt = None # clears the old one
         with st.spinner("Finding a prompt for you..."):
             prompt_message = groq_client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
@@ -345,11 +377,11 @@ def show_journal_page(user):
                 messages=[
                     {
                         "role": "system",
-                        "content": "You generate single, thoughtful journaling prompts. Return ONLY the prompt itself — no intro, no quotes, no extra text. Make it specific, introspective, and warm. Vary the topics: relationships, memories, emotions, dreams, gratitude, fears, growth, daily life."
+                        "content": "You generate single, thoughtful journaling prompts. Return ONLY the prompt itself — no intro, no quotes, no extra text. Make it specific, introspective, and warm. Strictly rotate between these topics and NEVER repeat the same category: current emotions, relationships with friends or family, personal goals, recent experiences, gratitude, things you're looking forward to, small wins, frustrations, creative thoughts, body and energy levels, work or projects. AVOID childhood memories, trauma, or heavy psychological themes. Be imaginative, not boring prompts, help the user be creative in their writing."
                     },
                     {
                         "role": "user",
-                        "content": "Give me a journaling prompt."
+                        "content": f"Give me a journaling prompt. Random seed: {random.randint(1, 1000)}"
                     }
                 ]
             )
@@ -465,9 +497,18 @@ SCORE: [a single number from 1 to 10 representing emotional heaviness, where 1 i
                 )
                 st.markdown("---")
 
-                analysis = re.sub(r"SCORE:\s*\d+\n?", "", response).strip()
-                
-            st.markdown(analysis)
+            analysis = re.sub(r"SCORE:\s*\d+\n?", "", response).strip()
+
+            def stream_analysis():
+                for word in analysis.split(" "):
+                    yield word + " "
+                    import time
+                    time.sleep(0.03)
+
+            st.write_stream(stream_analysis())
+            if st.button("✏️ Write another entry"):
+                st.session_state.journal_prompt = None
+                st.rerun()
 
 # ─────────────────────────────────────────
 # DASHBOARD PAGE
